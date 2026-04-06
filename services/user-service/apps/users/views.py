@@ -1,7 +1,5 @@
-from operator import ge
-
 from rest_framework import generics, status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from .models import User, UserProfile
@@ -15,11 +13,28 @@ from .serializers import (
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserRegistrationSerializer
-    permission_classes = []
+    permission_classes = [AllowAny]  # Явно разрешаем без аутентификации
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            return Response(
+                {
+                    "id": user.id,
+                    "email": user.email,
+                    "username": user.username,
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                    "message": "User registered successfully",
+                },
+                status=status.HTTP_201_CREATED,
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ProfileView(generics.RetrieveUpdateAPIView):
-    serializer_class = UserProfileSerializer
+class ProfileView(generics.RetrieveAPIView):
+    serializer_class = UserWithProfileSerializer
     permission_classes = [IsAuthenticated]
 
     def get_object(self):

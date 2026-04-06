@@ -59,5 +59,5 @@ def refresh_token(request):
         )
     except Exception as e:
         return Response(
-            {"Invalid refresh token": str(e)}, status=status.HTTP_401_UNAUTHORIZED
+            {"error": "Invalid refresh token"}, status=status.HTTP_401_UNAUTHORIZED
         )
